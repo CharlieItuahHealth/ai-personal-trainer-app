@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Personal Trainer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom Animations for Exercises */
+        .anim-jump-dot {
+            width: 50px;
+            height: 50px;
+            background-color: #3b82f6; /* Tailwind blue-500 */
+            border-radius: 50%;
+            animation: jump_anim 0.8s infinite ease-in-out;
+            margin: auto; /* Center it */
+        }
+        @keyframes jump_anim {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-40px); }
+        }
+
+        .anim-pushup-bar {
+            width: 100px;
+            height: 20px;
+            background-color: #10b981; /* Tailwind emerald-500 */
+            animation: pushup_anim 1.5s infinite ease-in-out;
+            margin: auto;
+        }
+        @keyframes pushup_anim {
+            0%, 100% { transform: translateY(30px); }
+            50% { transform: translateY(-30px); }
+        }
+
+        .anim-squat-bar {
+            width: 30px;
+            height: 100px; /* Initial height */
+            background-color: #ef4444; /* Tailwind red-500 */
+            animation: squat_anim 1.5s infinite ease-in-out;
+            margin: auto;
+            transform-origin: bottom;
+        }
+        @keyframes squat_anim {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(0.5); }
+        }
+
+        .anim-plank-line {
+            width: 120px;
+            height: 10px;
+            background-color: #f59e0b; /* Tailwind amber-500 */
+            border-radius: 5px;
+            animation: plank_pulse 2s infinite ease-in-out;
+            margin: auto;
+        }
+        @keyframes plank_pulse {
+            0%, 100% { opacity: 1; transform: scaleX(1); }
+            50% { opacity: 0.7; transform: scaleX(1.05); }
+        }
+
+        .anim-highknees-legs {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end; /* Align to bottom */
+            height: 80px; /* Container for legs */
+            gap: 10px;
+        }
+        .anim-highknees-leg {
+            width: 15px;
+            height: 50px;
+            background-color: #6366f1; /* Tailwind indigo-500 */
+            border-radius: 3px;
+            animation: highknees_anim 0.5s infinite ease-in-out;
+        }
+        .anim-highknees-leg:nth-child(2) {
+            animation-delay: 0.25s; /* Stagger animation */
+        }
+        @keyframes highknees_anim {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-25px); }
+        }
+
+        /* Smooth transition for message box */
+        #message-box {
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        }
+        #message-box.hidden {
+            opacity: 0;
+            transform: translateY(-20px);
+            pointer-events: none; /* Prevent interaction when hidden */
+        }
+        .btn-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 to-gray-800 text-gray-100 font-inter min-h-screen flex flex-col">
+
+    <header class="bg-white/10 backdrop-blur-md text-white p-5 shadow-lg sticky top-0 z-50">
+        <h1 class="text-3xl font-bold text-center tracking-tight">
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-green-400 to-teal-400">
+                AI Fitness Companion
+            </span>
+        </h1>
+    </header>
+
+    <main class="container mx-auto mt-6 p-4 flex-grow">
+        <section id="welcome" class="text-center mb-10">
+            <h2 class="text-4xl font-semibold text-white mb-2">Welcome!</h2>
+            <p class="text-lg text-gray-400">Your personalized workout awaits. Let's get moving!</p>
+        </section>
+
+        <section id="workout-area" class="bg-white/5 backdrop-blur-lg p-6 sm:p-8 rounded-xl shadow-2xl border border-white/10">
+            <div id="workout-info" class="text-center mb-6">
+                <h3 id="workout-title" class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-blue-300">Your Daily Burn</h3>
+                <p id="exercise-progress" class="text-gray-400 mt-1">Exercise 1 of 5</p>
+            </div>
+
+            <div id="exercise-card" class="bg-gray-700/30 p-6 rounded-lg shadow-inner text-center mb-8 border border-white/10">
+                <h4 id="exercise-name" class="text-3xl font-semibold text-white mb-2">Jumping Jacks</h4>
+                <p id="exercise-details" class="text-xl text-green-400 mb-4">30 seconds</p>
+                <p id="exercise-instructions" class="text-sm text-gray-300 mb-5 px-4">Stand with feet together, jump to a position with the legs spread wide and the hands touching overhead.</p>
+
+                <div id="animation-container" class="w-full h-52 sm:h-64 bg-gray-800/50 rounded-md flex items-center justify-center text-blue-400 mb-4 overflow-hidden relative shadow-md border border-white/5">
+                    <div class="anim-jump-dot"></div>
+                </div>
+                <p id="animation-text" class="text-xs text-gray-500">Visualizing: Jumping Jacks</p>
+            </div>
+
+            <div id="controls" class="flex flex-col sm:flex-row justify-center items-center space-y-3 sm:space-y-0 sm:space-x-4">
+                <button id="prev-btn" class="w-full sm:w-auto bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-500 hover:to-gray-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                    Previous
+                </button>
+                <button id="main-action-btn" class="w-full sm:w-auto bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 hover:from-blue-600 hover:via-blue-700 hover:to-purple-700 text-white font-bold py-3 px-8 rounded-lg shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400 text-lg">
+                    Begin Workout
+                </button>
+                <button id="next-btn" class="w-full sm:w-auto bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-500 hover:to-gray-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400">
+                    Next
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline ml-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>
+                </button>
+            </div>
+
+             <div id="message-box" class="hidden mt-6 p-4 border rounded-lg relative text-center" role="alert">
+                <strong class="font-bold" id="message-title">Info:</strong>
+                <span class="block sm:inline ml-1" id="message-text">Workout complete!</span>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center p-6 mt-8 text-gray-500 text-sm">
+        <p>&copy; 2025 AI Fitness Companion. Fitness for the Future.</p>
+    </footer>
+
+    <script>
+        const exercises = [
+            { name: "Jumping Jacks", duration: "30 seconds", animationType: "jump", instructions: "Stand with feet together, then jump to a position with the legs spread wide and the hands touching overhead. Repeat." },
+            { name: "Push-ups", reps: "10 reps", animationType: "pushup", instructions: "Start in a plank position. Lower your body until your chest nearly touches the floor, then push back up. Keep your body straight." },
+            { name: "Squats", reps: "15 reps", animationType: "squat", instructions: "Stand with feet shoulder-width apart. Lower your hips as if sitting in a chair, keeping your chest up and knees behind your toes." },
+            { name: "Plank", duration: "45 seconds", animationType: "plank", instructions: "Hold a push-up position, but rest your weight on your forearms instead of your hands. Keep your body in a straight line from head to heels." },
+            { name: "High Knees", duration: "30 seconds", animationType: "highknees", instructions: "Run in place, bringing your knees up towards your chest as high as possible. Keep your core engaged." }
+        ];
+
+        let currentExerciseIndex = 0;
+        let workoutActive = false; // To track if the "Begin Workout" has been pressed
+
+        // DOM Elements
+        const workoutTitleEl = document.getElementById('workout-title');
+        const exerciseProgressEl = document.getElementById('exercise-progress');
+        const exerciseNameEl = document.getElementById('exercise-name');
+        const exerciseDetailsEl = document.getElementById('exercise-details');
+        const exerciseInstructionsEl = document.getElementById('exercise-instructions');
+        const animationContainerEl = document.getElementById('animation-container');
+        const animationTextEl = document.getElementById('animation-text');
+        
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const mainActionButton = document.getElementById('main-action-btn');
+
+        const messageBox = document.getElementById('message-box');
+        const messageTitleEl = document.getElementById('message-title');
+        const messageTextEl = document.getElementById('message-text');
+
+        // Utility to show messages
+        function showMessage(title, message, type = 'info') {
+            messageTitleEl.textContent = title;
+            messageTextEl.textContent = message;
+            
+            messageBox.className = 'mt-6 p-4 border rounded-lg relative text-center'; // Reset classes
+            messageBox.classList.remove('hidden');
+
+            if (type === 'success') {
+                messageBox.classList.add('bg-green-900/30', 'border-green-500', 'text-green-300');
+            } else if (type === 'error') {
+                messageBox.classList.add('bg-red-900/30', 'border-red-500', 'text-red-300');
+            } else { // info
+                messageBox.classList.add('bg-blue-900/30', 'border-blue-500', 'text-blue-300');
+            }
+
+            // Hide after a delay, ensure it's not re-hidden if another message comes quickly
+            setTimeout(() => {
+                // Only hide if this specific message is still being shown
+                if (messageTextEl.textContent === message) {
+                     messageBox.classList.add('hidden');
+                }
+            }, 4000);
+        }
+        
+        // Render the animation in the container
+        function renderAnimation(exercise) {
+            animationContainerEl.innerHTML = ''; // Clear previous animation
+            animationTextEl.textContent = `Visualizing: ${exercise.name}`;
+            let animElement;
+
+            switch (exercise.animationType) {
+                case 'jump':
+                    animElement = document.createElement('div');
+                    animElement.className = 'anim-jump-dot';
+                    break;
+                case 'pushup':
+                    animElement = document.createElement('div');
+                    animElement.className = 'anim-pushup-bar';
+                    break;
+                case 'squat':
+                    animElement = document.createElement('div');
+                    animElement.className = 'anim-squat-bar';
+                    break;
+                case 'plank':
+                    animElement = document.createElement('div');
+                    animElement.className = 'anim-plank-line';
+                    break;
+                case 'highknees':
+                    animElement = document.createElement('div');
+                    animElement.className = 'anim-highknees-legs';
+                    const leg1 = document.createElement('div');
+                    leg1.className = 'anim-highknees-leg';
+                    const leg2 = document.createElement('div');
+                    leg2.className = 'anim-highknees-leg';
+                    animElement.appendChild(leg1);
+                    animElement.appendChild(leg2);
+                    break;
+                default: // Fallback for undefined animation types
+                    animElement = document.createElement('div');
+                    animElement.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="text-gray-500 opacity-50"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path><path d="M12 2L12 22M22 12L2 12"/></svg><p class="mt-2 text-xs text-gray-400">Animation for ${exercise.name}</p>`;
+            }
+            if (animElement) {
+                animationContainerEl.appendChild(animElement);
+            }
+        }
+
+        // Display the current exercise
+        function displayExercise(index) {
+            const exercise = exercises[index];
+            exerciseNameEl.textContent = exercise.name;
+            exerciseDetailsEl.textContent = exercise.duration || exercise.reps;
+            exerciseInstructionsEl.textContent = exercise.instructions;
+
+            renderAnimation(exercise);
+
+            exerciseProgressEl.textContent = `Exercise ${index + 1} of ${exercises.length}`;
+
+            // Update button states
+            prevBtn.disabled = index === 0;
+            nextBtn.disabled = index === exercises.length - 1;
+
+            prevBtn.classList.toggle('btn-disabled', index === 0);
+            nextBtn.classList.toggle('btn-disabled', index === exercises.length - 1);
+            
+            if (workoutActive) {
+                if (index === exercises.length - 1) {
+                    mainActionButton.textContent = "Finish Workout";
+                } else {
+                    mainActionButton.textContent = "Next Exercise";
+                }
+            }
+        }
+
+        // Event Listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentExerciseIndex > 0) {
+                currentExerciseIndex--;
+                displayExercise(currentExerciseIndex);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentExerciseIndex < exercises.length - 1) {
+                currentExerciseIndex++;
+                displayExercise(currentExerciseIndex);
+            }
+        });
+        
+        mainActionButton.addEventListener('click', () => {
+            if (!workoutActive) { // If workout hasn't started
+                workoutActive = true;
+                currentExerciseIndex = 0; // Start from the first exercise
+                displayExercise(currentExerciseIndex);
+                mainActionButton.textContent = "Next Exercise";
+                showMessage("Workout Started!", "Let's go! Complete each exercise.", "success");
+                workoutTitleEl.textContent = "Workout in Progress...";
+            } else { // Workout is active, button acts as "Next" or "Finish"
+                if (currentExerciseIndex < exercises.length - 1) { // If not the last exercise
+                    currentExerciseIndex++;
+                    displayExercise(currentExerciseIndex);
+                } else { // Last exercise, so finish workout
+                    workoutActive = false;
+                    mainActionButton.textContent = "Start New Workout";
+                    showMessage("Congratulations!", "Workout Complete! Well done!", "success");
+                    workoutTitleEl.textContent = "Workout Finished!";
+                    // Optionally, reset to first exercise view or a summary
+                    // currentExerciseIndex = 0; displayExercise(currentExerciseIndex);
+                }
+            }
+        });
+
+        // Initial display setup when the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            displayExercise(currentExerciseIndex); // Show the first exercise by default
+            // Ensure buttons are correctly set based on initial index 0
+            prevBtn.disabled = true;
+            prevBtn.classList.add('btn-disabled');
+            if (exercises.length <= 1) {
+                nextBtn.disabled = true;
+                nextBtn.classList.add('btn-disabled');
+            }
+        });
+    </script>
+</body>
+</html>
